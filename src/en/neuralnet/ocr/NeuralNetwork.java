@@ -4,7 +4,11 @@ import java.awt.Color;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map.Entry;
 
 import javax.imageio.ImageIO;
@@ -34,7 +38,7 @@ public class NeuralNetwork {
 			}
 			
 			// maps potential characters to the probability that the mystery character matches that potential character
-			HashMap<Character,Float> probabilities = new HashMap<Character,Float>();
+			final HashMap<Character,Float> probabilities = new HashMap<Character,Float>();
 			for(char character : characters.toCharArray()) {
 				probabilities.put(character, 0.0f);
 			}
@@ -48,7 +52,18 @@ public class NeuralNetwork {
 				}
 			}
 			
-			// TODO pick best match
+			System.out.println("Top 5 Matches:");
+			List<Character> keys = new ArrayList<Character>(probabilities.keySet());
+			Collections.sort(keys, new Comparator<Character>() {
+				@Override
+				public int compare(Character o1, Character o2) {
+					return probabilities.get(o1).compareTo(probabilities.get(o2));
+				}});
+			assert keys.size() > 5;
+			for(int i=0; i<5; i++) {
+				char c = keys.get(i);
+				System.out.printf("%d: %c (%f%%)%n", i+1, c, probabilities.get(c));
+			}
 		} catch (IOException e) {
 			System.err.println("Error reading " + args[0]);
 		}
