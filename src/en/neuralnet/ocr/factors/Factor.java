@@ -8,4 +8,18 @@ public interface Factor {
 	 * @return
 	 */
 	public float calculate(float[][] img);
+	
+	/**
+	 * The name of the factor (for reference in files and such).
+	 * 
+	 * @return
+	 */
+	public String getName();
+	
+	/**
+	 * The weight of the factor.
+	 * 
+	 * @return A value between 0 and 1 (inclusive). All weights should add up to 1.
+	 */
+	public float getWeight();
 }
