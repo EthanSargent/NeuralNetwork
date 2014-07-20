@@ -19,16 +19,18 @@ import en.neuralnet.ocr.data.DataNotFoundException;
 import en.neuralnet.ocr.factors.Factor;
 
 public class NeuralNetwork {
-	private static final String   WORKING_DIR = "C:\\\\ai-temp\\eclipse-epsilon-1.1_SR1-win32-x86_64\\workspace\\NeuralNetwork\\";
-	private static final String   CHARACTERS  = "abcdefghijklmnopqrstuzwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
-	private static final Factor[] FACTORS     = {}; // TODO fill with factors
+	private   static final String   WORKING_DIR = "C:\\\\ai-temp\\eclipse-epsilon-1.1_SR1-win32-x86_64\\workspace\\NeuralNetwork\\";
+	protected static final String   CHARACTERS  = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+	private   static final Factor[] FACTORS     = {}; // TODO fill with factors
 	
-	public static void main(String[] args) {
-		if(args.length < 1) throw new IllegalArgumentException("Must specify image path.");
-		
+	public static void read(String imgPath) {
+		train(imgPath, ' ');
+	}
+	
+	public static void train(String imgPath, char answer) {
 		try {
 			DataManager dm = new DataManager(WORKING_DIR);
-			BufferedImage bi = ImageIO.read(new File(args[0]));
+			BufferedImage bi = ImageIO.read(new File(imgPath));
 			int w = bi.getWidth();
 			int h = bi.getHeight();
 			int[] rgbs = bi.getRGB(0, 0, w, h, null, 0, w);
@@ -69,7 +71,7 @@ public class NeuralNetwork {
 				System.out.printf("%d: %c (%f%%)%n", i+1, c, probabilities.get(c)*100);
 			}
 		} catch (IOException e) {
-			System.err.println("Error reading " + args[0]);
+			System.err.println("Error reading " + imgPath);
 		} catch (DataNotFoundException e1) {
 			e1.printStackTrace();
 		}
