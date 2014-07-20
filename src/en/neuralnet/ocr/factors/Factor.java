@@ -15,11 +15,4 @@ public interface Factor {
 	 * @return
 	 */
 	public String getName();
-	
-	/**
-	 * The weight of the factor.
-	 * 
-	 * @return A value between 0 and 1 (inclusive). All weights should add up to 1.
-	 */
-	public float getWeight();
 }

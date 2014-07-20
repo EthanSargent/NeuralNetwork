@@ -14,16 +14,20 @@ import java.util.Map.Entry;
 import javax.imageio.ImageIO;
 
 import en.neuralnet.ocr.characters.CharacterMatcher;
+import en.neuralnet.ocr.data.DataManager;
+import en.neuralnet.ocr.data.DataNotFoundException;
 import en.neuralnet.ocr.factors.Factor;
 
 public class NeuralNetwork {
-	private static final String   characters = "abcdefghijklmnopqrstuzwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
-	private static final Factor[] factors    = {}; // TODO fill with factors
+	private static final String   WORKING_DIR = "C:\\\\ai-temp\\eclipse-epsilon-1.1_SR1-win32-x86_64\\workspace\\NeuralNetwork\\";
+	private static final String   CHARACTERS  = "abcdefghijklmnopqrstuzwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+	private static final Factor[] FACTORS     = {}; // TODO fill with factors
 	
 	public static void main(String[] args) {
 		if(args.length < 1) throw new IllegalArgumentException("Must specify image path.");
 		
 		try {
+			DataManager dm = new DataManager(WORKING_DIR);
 			BufferedImage bi = ImageIO.read(new File(args[0]));
 			int w = bi.getWidth();
 			int h = bi.getHeight();
@@ -39,16 +43,16 @@ public class NeuralNetwork {
 			
 			// maps potential characters to the probability that the mystery character matches that potential character
 			final HashMap<Character,Float> probabilities = new HashMap<Character,Float>();
-			for(char character : characters.toCharArray()) {
+			for(char character : CHARACTERS.toCharArray()) {
 				probabilities.put(character, 0.0f);
 			}
 			
-			for(Factor f : factors) {
+			for(Factor f : FACTORS) {
 				float val = f.calculate(grayscale);
 				for(Entry<Character,Float> e : probabilities.entrySet()) {
 					char key = e.getKey();
 					float match = CharacterMatcher.match(f.getName(), val, key);
-					probabilities.put(key, e.getValue() + match * f.getWeight());
+					probabilities.put(key, e.getValue() + match * dm.getWeight(f.getName()));
 				}
 			}
 			
@@ -62,10 +66,12 @@ public class NeuralNetwork {
 			assert keys.size() > 5;
 			for(int i=0; i<5; i++) {
 				char c = keys.get(i);
-				System.out.printf("%d: %c (%f%%)%n", i+1, c, probabilities.get(c));
+				System.out.printf("%d: %c (%f%%)%n", i+1, c, probabilities.get(c)*100);
 			}
 		} catch (IOException e) {
 			System.err.println("Error reading " + args[0]);
+		} catch (DataNotFoundException e1) {
+			e1.printStackTrace();
 		}
 	}
 }
