@@ -1,0 +1,14 @@
+7/18
+Neural Network Tutorial Notes
+
+- a neural network learns through reconfiguration of the weigh assignments for
+	inputs to the neurons
+
+ x_n = input N
+ w_n = weight N
+ 
+ activation = value tested by the threshold to determine if neuron will fire
+ activation = w1x1 + w2x2 + w3x3 + ... + w_n * x_n
+
+ - if activation threshold is satisfied, neuron returns 1
+ - otherwise, neuron returns a value of zero
