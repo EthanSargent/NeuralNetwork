@@ -7,7 +7,6 @@ public interface Factor {
 	 * @param img
 	 * @return
 	 */
-	
 	public float calculate(float[][] img);
 	
 	/**

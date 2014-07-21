@@ -59,7 +59,6 @@ public class NeuralNetwork {
 				for(Entry<Character,Float> e : probabilities.entrySet()) {
 					char key = e.getKey();
 					float match = cm.match(f.getName(), val, key);
-					//System.out.printf("put %s => %f%n", key, e.getValue() + match * dm.getWeight(f.getName()));
 					probabilities.put(key, e.getValue() + match * dm.getWeight(f.getName()));
 				}
 			}
@@ -70,7 +69,6 @@ public class NeuralNetwork {
 			Collections.sort(keys, new Comparator<Character>() {
 				@Override
 				public int compare(Character o1, Character o2) {
-					//return probabilities.get(o1).compareTo(probabilities.get(o2));
 					return probabilities.get(o2).compareTo(probabilities.get(o1));
 				}});
 			assert keys.size() > 5;

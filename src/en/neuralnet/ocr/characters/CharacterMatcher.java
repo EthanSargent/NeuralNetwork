@@ -20,8 +20,6 @@ public class CharacterMatcher {
 	 */
 	public float match(String factor, float factorValue, char character) {
 		try {
-			//System.out.printf("%s = %f for %c%n", factor, dm.getAvgValue(factor, character), character);
-			//System.out.printf("Diff for %c is %f%n", character, 1.0f - Math.abs(dm.getAvgValue(factor, character) - factorValue));
 			return 1.0f - Math.abs(dm.getAvgValue(factor, character) - factorValue);
 		} catch (DataNotFoundException e) {
 			e.printStackTrace();
