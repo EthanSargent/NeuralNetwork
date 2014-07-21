@@ -16,12 +16,12 @@ import javax.imageio.ImageIO;
 import en.neuralnet.ocr.characters.CharacterMatcher;
 import en.neuralnet.ocr.data.DataManager;
 import en.neuralnet.ocr.data.DataNotFoundException;
-import en.neuralnet.ocr.factors.Factor;
+import en.neuralnet.ocr.factors.*;
 
 public class NeuralNetwork {
-	private   static final String   WORKING_DIR = "C:\\\\ai-temp\\eclipse-epsilon-1.1_SR1-win32-x86_64\\workspace\\NeuralNetwork\\";
 	protected static final String   CHARACTERS  = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
-	private   static final Factor[] FACTORS     = {}; // TODO fill with factors
+	private   static final String   WORKING_DIR = "";
+	private   static final Factor[] FACTORS     = {new Volume()}; // TODO fill with factors
 	
 	public static void read(String imgPath) {
 		train(imgPath, ' ');
@@ -29,7 +29,9 @@ public class NeuralNetwork {
 	
 	public static void train(String imgPath, char answer) {
 		try {
+			// set up data manager and read image
 			DataManager dm = new DataManager(WORKING_DIR);
+			CharacterMatcher cm = new CharacterMatcher(dm);
 			BufferedImage bi = ImageIO.read(new File(imgPath));
 			int w = bi.getWidth();
 			int h = bi.getHeight();
@@ -49,27 +51,35 @@ public class NeuralNetwork {
 				probabilities.put(character, 0.0f);
 			}
 			
+			// this is where the magic happens
 			for(Factor f : FACTORS) {
 				float val = f.calculate(grayscale);
+				if(answer != ' ') System.out.println("Factor '" + f.getName() + "' for " + answer + " is " + val);
+				if(answer != ' ') dm.setAvgValue(f.getName(), answer, val);
 				for(Entry<Character,Float> e : probabilities.entrySet()) {
 					char key = e.getKey();
-					float match = CharacterMatcher.match(f.getName(), val, key);
+					float match = cm.match(f.getName(), val, key);
+					//System.out.printf("put %s => %f%n", key, e.getValue() + match * dm.getWeight(f.getName()));
 					probabilities.put(key, e.getValue() + match * dm.getWeight(f.getName()));
 				}
 			}
 			
-			System.out.println("Top 5 Matches:");
+			// find and print out the top 5 most likely matches
+			System.out.println(answer == ' ' ? "Top 5 matches:" : ("Top 5 matches for " + answer + ":"));
 			List<Character> keys = new ArrayList<Character>(probabilities.keySet());
 			Collections.sort(keys, new Comparator<Character>() {
 				@Override
 				public int compare(Character o1, Character o2) {
-					return probabilities.get(o1).compareTo(probabilities.get(o2));
+					//return probabilities.get(o1).compareTo(probabilities.get(o2));
+					return probabilities.get(o2).compareTo(probabilities.get(o1));
 				}});
 			assert keys.size() > 5;
 			for(int i=0; i<5; i++) {
 				char c = keys.get(i);
 				System.out.printf("%d: %c (%f%%)%n", i+1, c, probabilities.get(c)*100);
 			}
+			
+			dm.save();
 		} catch (IOException e) {
 			System.err.println("Error reading " + imgPath);
 		} catch (DataNotFoundException e1) {

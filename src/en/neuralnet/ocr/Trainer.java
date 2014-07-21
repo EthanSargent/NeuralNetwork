@@ -16,7 +16,7 @@ public class Trainer {
 			File upper = new File(character.getPath() + "\\upper\\");
 			if(upper.exists() && upper.isDirectory()) {
 				for(File test : upper.listFiles()) {
-					NeuralNetwork.train(test.getAbsolutePath(), character.getName().charAt(0));
+					NeuralNetwork.train(test.getAbsolutePath(), Character.toUpperCase(character.getName().charAt(0)));
 				}
 			}
 		}

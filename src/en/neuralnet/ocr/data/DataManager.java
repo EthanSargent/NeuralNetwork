@@ -93,6 +93,7 @@ public class DataManager {
 				String key = e.getKey();
 				for(Entry<Character,Float> pair : e.getValue().entrySet()) {
 					bw.write(key + ":" + pair.getKey() + ":" + pair.getValue());
+					bw.newLine();
 				}
 			}
 			bw.close();
