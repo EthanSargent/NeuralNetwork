@@ -2,8 +2,8 @@ package en.neuralnet.ocr;
 
 public class Neuron {
 	
-	double[] inputWeights;
-	double bias;
+	private double[] inputWeights;
+	private double bias;
 	
 	/**
 	 * Compute the output of this neuron given the inputs from the previous layer
@@ -30,5 +30,9 @@ public class Neuron {
 	
 	public void setBias(double bias) {
 		this.bias = bias;
+	}
+	
+	public double getBias() {
+		return bias;
 	}
 }

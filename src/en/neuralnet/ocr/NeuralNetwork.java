@@ -1,67 +1,44 @@
 package en.neuralnet.ocr;
 
-import java.io.DataInputStream;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.util.Random;
-
 public class NeuralNetwork {
-	
-	private static final String DATA_FOLDER = "C:\\Users\\scamper\\My Documents\\Neural network\\data\\";
-	private static final String IMAGE_FILE = "t10k-images-idx3-ubyte";
-	private static final String LABEL_FILE = "t10k-labels-idx1-ubyte";
 	private static final double ALPHA = 0.9;
+	private static final char[] CHARS = "0123456789".toCharArray();
+	private static final boolean TRAINING = false;
 	
 	public static void main(String[] args) {
-		try {
-			DataInputStream labelInputStream = new DataInputStream(new FileInputStream(DATA_FOLDER + LABEL_FILE));
-			labelInputStream.readInt(); // magic number
-			int numLabels = labelInputStream.readInt();
-			
-			int[] labels = new int[numLabels];
-			for(int i=0; i<labels.length; i++) {
-				labels[i] = labelInputStream.readUnsignedByte();
-			}
-			labelInputStream.close();
-			
-			DataInputStream imgInputStream = new DataInputStream(new FileInputStream(DATA_FOLDER + IMAGE_FILE));
-			imgInputStream.readInt(); // magic number
-			int numImgs = imgInputStream.readInt();
-			int numRows = imgInputStream.readInt();
-			int numCols = imgInputStream.readInt();
-			
-			double[][] images = new double[numImgs][numRows * numCols];
-			for(int i=0; i<images.length; i++) {
-				for(int j=0; j<images[i].length; j++) {
-					images[i][j] = imgInputStream.readUnsignedByte() / 255.0;
-				}
-			}
-			imgInputStream.close();
-			
-			if(numLabels != numImgs) throw new IllegalArgumentException("Number of labels is not equal to number of images.");
-			
-			
-			Random random = new Random();
-			Neuron[] neurons = new Neuron[10];
-			for(int j=0; j<neurons.length; j++) {
-				neurons[j] = new Neuron();
-				double[] weights = new double[numRows * numCols];
-				for(int i=0; i<weights.length; i++) {
-					weights[i] = random.nextDouble() * 2 - 1;
-				}
-				neurons[j].setWeights(weights);
-				neurons[j].setBias(random.nextDouble() * 2 - 1);
+		int[] labels = ImageManager.getLabels();
+		ImageData imageData = ImageManager.getImages();
+		double[][] images = imageData.getImages();
+		int imgSize = imageData.getNumCols() * imageData.getNumRows();
+		
+		if(labels.length != images.length) throw new IllegalArgumentException("Number of labels is not equal to number of images.");
+		
+		System.out.println("retrieved image data");
+		
+		WeightManager weightManager = new WeightManager(imgSize, CHARS);
+		
+		Neuron[] neurons = new Neuron[CHARS.length];
+		for(int j=0; j<neurons.length; j++) {
+			neurons[j] = new Neuron();
+			neurons[j].setWeights(weightManager.getWeights(CHARS[j]));
+			neurons[j].setBias(weightManager.getBias(CHARS[j]));
+		}
+		
+		System.out.println("initialized neurons");
+		
+		int correct = 0;
+		
+		for(int i=0; i<images.length; i++) {
+			// Propagate the inputs forward to compute the outputs
+			double[] weightedSums = new double[neurons.length];
+			double[] outputs = new double[neurons.length];
+			for(int j=0; j<weightedSums.length; j++) {
+				weightedSums[j] = neurons[j].getOutput(images[i]);
+				outputs[j] = sigmoidFunction(weightedSums[j]);
 			}
 			
-			for(int i=0; i<images.length; i++) {
-				// Propagate the inputs forward to compute the outputs
-				double[] weightedSums = new double[neurons.length];
-				double[] outputs = new double[neurons.length];
-				for(int j=0; j<weightedSums.length; j++) {
-					weightedSums[j] = neurons[j].getOutput(images[i]);
-					outputs[j] = sigmoidFunction(weightedSums[j]);
-				}
-				
+			if(TRAINING) {
+			
 				double[] deltas = new double[neurons.length];
 				for(int j=0; j<deltas.length; j++) {
 					deltas[j] = sigmoidPrime(weightedSums[j]) * ((labels[i] == j ? 1.0 : 0.0) - outputs[j]);
@@ -69,15 +46,44 @@ public class NeuralNetwork {
 				
 				for(int j=0; j<neurons.length; j++) {
 					double[] weights = neurons[j].getWeights();
+					double bias = neurons[j].getBias();
 					for(int k=0; k<weights.length; k++) {
 						weights[k] += ALPHA * images[i][k] * deltas[j];
-						System.out.printf("neuron %d weight %d set to %f%n", j, k, weights[k]);
+						bias += ALPHA * images[i][k] * deltas[j];
+						//System.out.printf("neuron %d weight %d set to %f%n", j, k, weights[k]);
+					}
+					neurons[j].setWeights(weights);
+					neurons[j].setBias(bias);
+					char c = Character.forDigit(j, 10);
+					weightManager.setWeights(c, weights);
+					weightManager.setBias(c, bias);
+				}
+			
+			} else {
+				
+				double max = -Double.MAX_VALUE;
+				int maxIndex = -1;
+				for(int j=0; j<outputs.length; j++) {
+					if(outputs[j] > max) {
+						max = outputs[j];
+						maxIndex = j;
 					}
 				}
+				assert maxIndex >= 0;
+				if(maxIndex == labels[i]) correct++;
+				
+				System.out.println(" GUESS: " + maxIndex);
+				System.out.println("ANSWER: " + labels[i]);
+				System.out.println();
 			}
-			
-		} catch (IOException e) {
-			e.printStackTrace();
+		}
+		
+		if(TRAINING) {
+			System.out.println("saving weights");
+			weightManager.save();
+		} else {
+			System.out.printf("%d/%d correct.%n", correct, images.length);
+			System.out.printf("That's %f%%%n", ((double) correct) / images.length * 100);
 		}
 	}
 	
