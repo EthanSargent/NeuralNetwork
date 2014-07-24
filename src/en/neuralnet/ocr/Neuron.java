@@ -17,7 +17,11 @@ public class Neuron {
 		for (int i = 0; i < inputWeights.length; i++) {
 			weightedSum += inputWeights[i] * inputs[i];
 		}
-		return sigmoidFunction(weightedSum);
+		return weightedSum;
+	}
+	
+	public double[] getWeights() {
+		return inputWeights;
 	}
 	
 	public void setWeights(double[] inputWeights) {
@@ -27,9 +31,4 @@ public class Neuron {
 	public void setBias(double bias) {
 		this.bias = bias;
 	}
-	
-	private static double sigmoidFunction(double in) {
-		return (1/(1 + Math.exp(in)));
-	}
-	
 }
