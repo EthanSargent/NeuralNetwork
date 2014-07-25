@@ -6,9 +6,17 @@ import java.util.SortedMap;
 import java.util.TreeMap;
 
 public class NeuralNetwork {
-	private static final double ALPHA = 0.9;
+	//List of possible outputs
 	private static final char[] CHARS = "0123456789".toCharArray();
-	private static final int TRAINING_LOOPS = 0;
+	
+	//Number of loops of training to be completed; 0 if in test mode
+	private static final int TRAINING_LOOPS = 5;
+	
+	//Final Learning Speed
+	private static final double ETA = 0.2;
+	
+	//Variable learning speed
+	private static double eta = ETA;
 	
 	@SuppressWarnings("unused")
 	public static void main(String[] args) {
@@ -57,8 +65,8 @@ public class NeuralNetwork {
 						double[] weights = neurons[j].getWeights();
 						double bias = neurons[j].getBias();
 						for(int k=0; k<weights.length; k++) {
-							weights[k] += ALPHA * images[i][k] * deltas[j];
-							bias += ALPHA * images[i][k] * deltas[j];
+							weights[k] += eta * images[i][k] * deltas[j];
+							bias += eta * images[i][k] * deltas[j];
 							//System.out.printf("neuron %d weight %d set to %f%n", j, k, weights[k]);
 						}
 						neurons[j].setWeights(weights);
@@ -69,7 +77,7 @@ public class NeuralNetwork {
 					}
 
 				} else {
-
+					
 					SortedMap<Double, Integer> solutions = new TreeMap<Double, Integer>();
 					for (int j = 0; j < CHARS.length; j ++) {
 						solutions.put(outputs[j],j);
@@ -82,11 +90,9 @@ public class NeuralNetwork {
 						if(e.getValue() == labels[i]) results[results.length - j - 1]++;
 						j++;
 					}
-					
-					System.out.println();
 				}
-
 			}
+			//updateLearningRate((double) a, (double) loops);
 		}
 
 		if(TRAINING_LOOPS > 0) {
@@ -106,5 +112,9 @@ public class NeuralNetwork {
 
 	public static double sigmoidFunction(double in) {
 		return (1/(1 + Math.exp(-in)));
+	}
+	//Updates the learning rate as a function of the training progress; slowly anneals the learning rate 
+	public static void updateLearningRate(double loopCount, double totalLoops) {
+		eta = ETA / (1 + (loopCount+1)/totalLoops);
 	}
 }
