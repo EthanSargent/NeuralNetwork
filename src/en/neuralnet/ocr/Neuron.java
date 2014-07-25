@@ -1,24 +1,28 @@
 package en.neuralnet.ocr;
 
+/**
+ *	Class containing the methods and data members associated with a single neuron in the network
+ *	NB: Does not contain the sigmoid function 
+ *
+ */
+
 public class Neuron {
 	
-	private double[] inputWeights;
-	private double bias;
+	private double[] inputWeights; // Weights for the inputs to this neuron
+	private double bias; // This neuron's bias weight
 	
-	/**
-	 * Compute the output of this neuron given the inputs from the previous layer
-	 * 
-	 * @param inputs List of inputs
-	 * @return
-	 */
+	// Compute the output of this neuron given the inputs from the previous layer
 	public double getOutput(double[] inputs) {
-		double weightedSum = bias;
-		assert inputWeights.length == inputs.length;
+		double weightedSum = bias; // Output includes bias weight
+		assert inputWeights.length == inputs.length; // no.of weights must equal no.of inputs
+		// Add the product of each input and its respective weight
 		for (int i = 0; i < inputWeights.length; i++) {
 			weightedSum += inputWeights[i] * inputs[i];
 		}
 		return weightedSum;
 	}
+	
+	// Getters and setters
 	
 	public double[] getWeights() {
 		return inputWeights;

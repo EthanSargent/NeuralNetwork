@@ -6,12 +6,14 @@ import java.util.SortedMap;
 import java.util.TreeMap;
 
 public class NeuralNetwork {
-	private static final double ALPHA = 0.9;
+	private static final double ALPHA = 0.2;
 	private static final char[] CHARS = "0123456789".toCharArray();
-	private static final int TRAINING_LOOPS = 0;
+	private static final int TRAINING_LOOPS = 5;
 	
 	@SuppressWarnings("unused")
 	public static void main(String[] args) {
+		System.out.println("Started");
+		
 		int[] labels = ImageManager.getLabels();
 		ImageData imageData = ImageManager.getImages();
 		double[][] images = imageData.getImages();
@@ -97,6 +99,8 @@ public class NeuralNetwork {
 				System.out.printf("%f%% guessed as %d%n", ((double) results[i]) / images.length * 100, i + 1);
 			}
 		}
+		
+		System.out.println("Done");
 	}
 
 	private static double sigmoidPrime(double x) {

@@ -6,7 +6,7 @@ import java.io.IOException;
 
 public class ImageManager {
 	private static final String DATA_FOLDER = "C:\\Users\\scamper\\My Documents\\Neural network\\data\\";
-	private static final boolean IS_LARGE_DATA = false;
+	private static final boolean IS_LARGE_DATA = true;
 	private static final String IMAGE_FILE = IS_LARGE_DATA ? "train-images-idx3-ubyte" : "t10k-images-idx3-ubyte";
 	private static final String LABEL_FILE = IS_LARGE_DATA ? "train-labels-idx1-ubyte" : "t10k-labels-idx1-ubyte";
 	
