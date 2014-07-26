@@ -16,17 +16,11 @@ import java.util.TreeMap;
  * 
  */
 public class NeuralNetwork {
-<<<<<<< HEAD
-	private static final double ALPHA = 0.2;
-	private static final char[] CHARS = "0123456789".toCharArray();
-	private static final int TRAINING_LOOPS = 5;
-=======
+	//Number of loops of training to be completed; 0 if in test mode
+	private static final int TRAINING_LOOPS = 1;
+	
 	//Array of all possible outputs (guesses of the neural network)
 	private static final char[] CHARS = "0123456789".toCharArray();
-	
-	//Number of loops of training to be completed; 0 if in test mode
-	private static final int TRAINING_LOOPS = 0;
->>>>>>> origin/singleLayer2
 	
 	//Final Learning Speed
 	private static final double ETA = 0.2;
@@ -36,13 +30,10 @@ public class NeuralNetwork {
 	
 	@SuppressWarnings("unused")
 	public static void main(String[] args) {
-<<<<<<< HEAD
 		System.out.println("Started");
 		
-=======
 		//Retrieving image labels (correct answers that backstop the training
 		//process of the neural network)
->>>>>>> origin/singleLayer2
 		int[] labels = ImageManager.getLabels();
 		
 		//Retrieves the map of grayscale values for each image in a 2d array
