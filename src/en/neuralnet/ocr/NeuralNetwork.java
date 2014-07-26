@@ -1,5 +1,10 @@
 package en.neuralnet.ocr;
 
+import java.awt.Color;
+import java.awt.Graphics2D;
+import java.awt.Image;
+import java.awt.RenderingHints;
+import java.awt.image.BufferedImage;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.SortedMap;
@@ -148,6 +153,65 @@ public class NeuralNetwork {
 		}
 		
 		System.out.println("Done");
+	}
+	
+	private static BufferedImage bufferAndScale(Image i, int side) {
+	    if(i instanceof BufferedImage) return (BufferedImage) i;
+	    
+	    BufferedImage bi = new BufferedImage(side, side, BufferedImage.TYPE_INT_ARGB);
+	    Graphics2D g = bi.createGraphics();
+	    g.addRenderingHints(new RenderingHints(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_QUALITY));
+	    g.drawImage(i, 0, 0, side, side, null);
+	    g.dispose();
+	    
+	    return bi;
+	}
+	
+	// TODO remove overlap with main
+	public static char guess(Image i) {
+	    // resize image to 28 x 28 and buffer it
+	    BufferedImage bi = bufferAndScale(i, 28);
+	    
+	    // convert image to double[]
+	    int[] rgbs = bi.getRGB(0, 0, bi.getWidth(), bi.getHeight(), null, 0, bi.getWidth());
+	    double[] image = new double[rgbs.length];
+	    for(int j=0; j<rgbs.length; j++) {
+	        Color c = new Color(rgbs[j]);
+	        image[j] = (c.getRed() + c.getGreen() + c.getBlue()) / 765.0; // 765 = 255 * 3
+	    }
+	    
+	    WeightManager weightManager = new WeightManager(28 * 28, CHARS);
+	    
+	    //Initializes the output neurons, 1 for each character to be tested for,
+        //as represented in the CHARS array above
+        Neuron[] neurons = new Neuron[CHARS.length];
+        for(int j=0; j<neurons.length; j++) {
+            neurons[j] = new Neuron();
+            neurons[j].setWeights(weightManager.getWeights(CHARS[j]));
+            neurons[j].setBias(weightManager.getBias(CHARS[j]));
+        }
+	    
+	    //Propagate the inputs forward to compute the outputs
+        double[] weightedSums = new double[neurons.length];
+        double[] outputs = new double[neurons.length];
+        for(int j=0; j<weightedSums.length; j++) {
+            //Performs the core neural network calculation
+            //Of computing the output of each neuron based on
+            //the relative weight of each pixel
+            weightedSums[j] = neurons[j].getOutput(image);
+            outputs[j] = sigmoidFunction(weightedSums[j]);
+        }
+        
+        double max = -Double.MAX_VALUE;
+        int maxIndex = -1;
+        for(int j=0; j<outputs.length; j++) {
+            if(outputs[j] > max) {
+                max = outputs[j];
+                maxIndex = j;
+            }
+        }
+        
+        return Character.forDigit(maxIndex, 10);
 	}
 
 	private static double sigmoidPrime(double x) {
