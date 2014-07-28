@@ -1,6 +1,5 @@
 package en.neuralnet.ocr;
 
-import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.Image;
 import java.awt.RenderingHints;
@@ -13,6 +12,8 @@ import java.util.SortedMap;
 import java.util.TreeMap;
 
 import javax.imageio.ImageIO;
+
+import en.neuralnet.ocr.data.WeightManager;
 /*
  * The NeuralNetwork main class retrieves the grayscale value maps for
  * each input image from the ImageManager class.
@@ -25,138 +26,125 @@ import javax.imageio.ImageIO;
  * 
  */
 public class NeuralNetwork {
-	//Number of loops of training to be completed; 0 if in test mode
-	private static final int TRAINING_LOOPS = 1;
-	
 	//Array of all possible outputs (guesses of the neural network)
 	private static final char[] CHARS = "0123456789".toCharArray();
 	
 	//Final Learning Speed
 	private static final double ETA = 0.2;
 	
-	//Variable learning speed
-	private static double eta = ETA;
+	// defines the hidden layers of the network. each number is the size of a hidden layer.
+	private static final int[] HIDDEN_LAYERS = {300};
 	
-	@SuppressWarnings("unused")
-	public static void main(String[] args) {
-		System.out.println("Started");
+	// the number of pixels in the image
+	private static final int IMAGE_SIZE = 28 * 28;
+	
+	private final WeightManager weightManager;
+	private final Neuron[][] neurons = new Neuron[HIDDEN_LAYERS.length + 1][];
+	
+	public NeuralNetwork() {
+		this.weightManager = new WeightManager(IMAGE_SIZE, HIDDEN_LAYERS, CHARS);
 		
-		//Retrieving image labels (correct answers that backstop the training
-		//process of the neural network)
-		int[] labels = ImageManager.getLabels();
-		
-		//Retrieves the map of grayscale values for each image in a 2d array
-		//(Each image gets a row)
-		ImageData imageData = ImageManager.getImages();
-		double[][] images = imageData.getImages();
-		int imgSize = imageData.getNumCols() * imageData.getNumRows();
-
-		//Makes sure each image is assigned a correct answer label
-		if(labels.length != images.length) throw new IllegalArgumentException("Number of labels is not equal to number of images.");
-		
-		//Progress marker for debugging purposes (did the image data retrieval succeed?)
-		System.out.println("retrieved image data");
-		
-		WeightManager weightManager = new WeightManager(imgSize, CHARS);
-
-		//Initializes the output neurons, 1 for each character to be tested for,
-		//as represented in the CHARS array above
-		Neuron[] neurons = new Neuron[CHARS.length];
 		for(int j=0; j<neurons.length; j++) {
-			neurons[j] = new Neuron();
-			neurons[j].setWeights(weightManager.getWeights(CHARS[j]));
-			neurons[j].setBias(weightManager.getBias(CHARS[j]));
-		}
-
-		//Another progress marker for debugging purposes (did the neurons initialize properly?)
-		System.out.println("initialized neurons");
-
-		int[] results = new int[CHARS.length];
-		
-		//Determines whether the user is training the network or formally testing it's accuracy
-		int loops = TRAINING_LOOPS > 0 ? TRAINING_LOOPS : 1;
-
-		//This block will run the training algorithm as many times as specified by the TRAINING_LOOPS
-		//Variable if in training mode (TRAINING_LOOPS > ); if TRAINING_LOOPS == 0, the method
-		//will execute the formal testing subroutine of the block which displays an overall accuracy figure.
-		for(int a=0; a<loops; a++) {
-			System.out.println("a = " + a);
-			for(int i=0; i<images.length; i++) {
-				//Propagate the inputs forward to compute the outputs
-				double[] weightedSums = new double[neurons.length];
-				double[] outputs = new double[neurons.length];
-				for(int j=0; j<weightedSums.length; j++) {
-					//Performs the core neural network calculation
-					//Of computing the output of each neuron based on
-					//the relative weight of each pixel
-					weightedSums[j] = neurons[j].getOutput(images[i]);
-					outputs[j] = sigmoidFunction(weightedSums[j]);
-				}
-
-				//The Backpropagation Algorithm adjusts the weights of each output neuron's input pixels
-				//based on the results of a forward propagation of a single image
-				if(TRAINING_LOOPS > 0) {
-
-					//The error measures (deltas) are calculated first
-					//Delta_j = Error_j * SigmoidPrime(weighted neuron sum), where j is the output
-					//neuron index
-					double[] deltas = new double[neurons.length];
-					for(int j=0; j<deltas.length; j++) {
-						deltas[j] = sigmoidPrime(weightedSums[j]) * ((labels[i] == j ? 1.0 : 0.0) - outputs[j]);
-					}
-
-					//Update rule for weights: w_i,j <- w_i,j + eta * activation of neuron i * delta_j
-					//Iteratively goes through all weights in the network, updating according to the
-					//above rule
-					for(int j=0; j<neurons.length; j++) {
-						double[] weights = neurons[j].getWeights();
-						double bias = neurons[j].getBias();
-						for(int k=0; k<weights.length; k++) {
-							weights[k] += eta * images[i][k] * deltas[j];
-							bias += eta * images[i][k] * deltas[j];
-							//System.out.printf("neuron %d weight %d set to %f%n", j, k, weights[k]);
-						}
-						neurons[j].setWeights(weights);
-						neurons[j].setBias(bias);
-						char c = Character.forDigit(j, 10);
-						
-						//Storing updated weights in the WeightManager
-						weightManager.setWeights(c, weights);
-						weightManager.setBias(c, bias);
-					}
-
-				} else {
-					//Prints out the actual correct image label, followed by the network's
-					//top 5 guesses.
-					SortedMap<Double, Integer> solutions = new TreeMap<Double, Integer>();
-					for (int j = 0; j < CHARS.length; j ++) {
-						solutions.put(outputs[j],j);
-					}
-					System.out.println("ANSWER: " + labels[i]);
-					Set<Entry<Double, Integer>> solSet = solutions.entrySet();
-					int j = 0;
-					for (Entry<Double, Integer> e : solSet) {
-						if(j >= 5) System.out.println("\tGuess " + (results.length - j) + ": " + e.getValue());
-						if(e.getValue() == labels[i]) results[results.length - j - 1]++;
-						j++;
-					}
-				}
+			// add neurons to this layer. if this is the output layer, number of neurons is taken from CHARS constant.
+			neurons[j] = new Neuron[j < HIDDEN_LAYERS.length ? HIDDEN_LAYERS[j] : CHARS.length];
+			for(int k=0; k<neurons[j].length; k++) {
+				neurons[j][k] = new Neuron(j < HIDDEN_LAYERS.length ? k : Character.getNumericValue(CHARS[k]));
+				int neuronID = neurons[j][k].getID();
+				neurons[j][k].setWeights(weightManager.getWeights(j, neuronID));
+				neurons[j][k].setBias(weightManager.getBias(j, neuronID));
 			}
-			//updateLearningRate((double) a, (double) loops);
+		}
+	}
+	
+	/**
+	 * Propagates the input image through the network.
+	 * 
+	 * @param input The initial input image.
+	 * @return The outputs of the last layer of the network.
+	 */
+	private double[] forwardPropagate(double[] input) {
+		// for each layer i in the network
+		double[] lastOutput = input;
+		for(int i=0; i<neurons.length; i++) {
+			// for each neuron j in the layer
+			double[] thisOutput = new double[neurons[i].length];
+			for(int j=0; j<neurons[i].length; j++) {
+				double weightedSum = neurons[i][j].getOutput(lastOutput);
+				thisOutput[j] = sigmoidFunction(weightedSum);
+			}
+			lastOutput = thisOutput;
+		}
+		return lastOutput;
+	}
+	
+	public void train(double[] image, char answer) {
+		double[] outputs = forwardPropagate(image);
+		
+		Neuron[] outputNeurons = neurons[neurons.length - 1];
+		// for each neuron in the output layer
+		for(int i=0; i<outputNeurons.length; i++) {
+			Neuron neuron = outputNeurons[i];
+			neuron.setDelta(sigmoidPrime(neuron.getWeightedSum()) * ((((char) neuron.getID()) == answer ? 1.0 : 0.0) - outputs[i]));
 		}
 		
-		if(TRAINING_LOOPS > 0) {
-			//Saves updated weights to archived text file ("weights.txt")
-			System.out.println("saving weights");
-			weightManager.save();
-		} else {
-			for (int i = 0; i < 10; i ++) {
-				//Prints out the percentage of correct answers ranked at each rank
-				System.out.printf("%f3%% guessed as %d%n", ((double) results[i]) / images.length * 100, i + 1);
+		// going backwards, for each layer except the output layer
+		for(int i=neurons.length-2; i>=0; i--) {
+			// for each neuron in this layer
+			for(int j=0; j<neurons[i].length; j++) {
+				double weightDeltaSum = 0.0;
+				// for each neuron in the layer after
+				for(int k=0; k<neurons[i+1].length; k++) {
+					weightDeltaSum += neurons[i+1][k].getDelta() * neurons[i+1][k].getWeights()[j];
+				}
+				neurons[i][j].setDelta(sigmoidPrime(neurons[i][j].getWeightedSum()) * weightDeltaSum);
 			}
 		}
 		
-		System.out.println("Done");
+		// for each layer in the network
+		for(int i=0; i<neurons.length; i++) {
+			// for each neuron in the layer
+			for(int j=0; j<neurons[i].length; j++) {
+				
+				// update weights
+				double[] weights = neurons[i][j].getWeights();
+				// for each weight in the neuron
+				for(int k=0; k<weights.length; k++) {
+					weights[k] += ETA * sigmoidFunction(neurons[i][j].getInputs()[k]) * neurons[i][j].getDelta();
+					System.out.println(ETA * sigmoidFunction(neurons[i][j].getInputs()[k]) * neurons[i][j].getDelta());
+				}
+				neurons[i][j].setWeights(weights);
+				weightManager.setWeights(i, neurons[i][j].getID(), weights);
+				
+				// update bias
+				double bias = neurons[i][j].getBias();
+				bias += ETA * 1.0 * neurons[i][j].getDelta();
+				neurons[i][j].setBias(bias);
+				weightManager.setBias(i, neurons[i][j].getID(), bias);
+				
+			}
+		}
+	}
+	
+	public void saveWeights() {
+		weightManager.save();
+	}
+	
+	public char guess(double[] image) {
+		double[] outputs = forwardPropagate(image);
+		
+		SortedMap<Double,Character> solutions = new TreeMap<Double,Character>();
+		for (int j = 0; j < CHARS.length; j ++) {
+			solutions.put(outputs[j], CHARS[j]);
+		}
+		
+		Set<Entry<Double,Character>> solSet = solutions.entrySet();
+		int j = 0;
+		for (Entry<Double,Character> e : solSet) {
+			if(j >= 5) System.out.println("\tGuess " + (CHARS.length - j) + ": " + e.getValue());
+			j++;
+		}
+		
+		return solutions.get(solutions.lastKey());
 	}
 	
 	private static BufferedImage bufferAndScale(Image i, int side) {
@@ -170,68 +158,15 @@ public class NeuralNetwork {
 	    
 	    return bi;
 	}
-	
-	// TODO remove overlap with main
-	public static char guess(Image i) {
-		//System.out.printf("original image is %d x %d%n", i.getWidth(null), i.getHeight(null));
-	    // resize image to 28 x 28 and buffer it
-	    BufferedImage bi = bufferAndScale(i, 28);
-	    saveImage(bi, "test.png");
-	    
-	    // convert image to double[]
-	    int[] rgbs = bi.getRGB(0, 0, bi.getWidth(), bi.getHeight(), null, 0, bi.getWidth());
-	    double[] image = new double[rgbs.length];
-	    for(int j=0; j<rgbs.length; j++) {
-	        Color c = new Color(rgbs[j]);
-	        image[j] = /*1.0 - */((c.getRed() + c.getGreen() + c.getBlue()) / 765.0); // 765 = 255 * 3 TODO: flip number?
-	        //System.out.println(image[j]);
-	    }
-	    
-	    WeightManager weightManager = new WeightManager(28 * 28, CHARS);
-	    
-	    //Initializes the output neurons, 1 for each character to be tested for,
-        //as represented in the CHARS array above
-        Neuron[] neurons = new Neuron[CHARS.length];
-        for(int j=0; j<neurons.length; j++) {
-            neurons[j] = new Neuron();
-            neurons[j].setWeights(weightManager.getWeights(CHARS[j]));
-            neurons[j].setBias(weightManager.getBias(CHARS[j]));
-        }
-	    
-	    //Propagate the inputs forward to compute the outputs
-        double[] weightedSums = new double[neurons.length];
-        double[] outputs = new double[neurons.length];
-        for(int j=0; j<weightedSums.length; j++) {
-            //Performs the core neural network calculation
-            //Of computing the output of each neuron based on
-            //the relative weight of each pixel
-            weightedSums[j] = neurons[j].getOutput(image);
-            outputs[j] = sigmoidFunction(weightedSums[j]);
-        }
-        
-        double max = -Double.MAX_VALUE;
-        int maxIndex = -1;
-        for(int j=0; j<outputs.length; j++) {
-            if(outputs[j] > max) {
-                max = outputs[j];
-                maxIndex = j;
-            }
-        }
-        
-        return Character.forDigit(maxIndex, 10);
-	}
 
 	private static double sigmoidPrime(double x) {
 		double temp = sigmoidFunction(x);
 		return temp * (1 - temp);
 	}
+	
 	//The sigmoid function converts weighted sums into neuron outputs
 	public static double sigmoidFunction(double in) {
 		return (1/(1 + Math.exp(-in)));
-	}
-	//Updates the learning rate as a function of the training progress; slowly anneals the learning rate 
-	public static void updateLearningRate(double loopCount, double totalLoops) {
-		eta = ETA / (1 + (loopCount+1)/totalLoops);
 	}
 	
 	/**

@@ -1,4 +1,4 @@
-package en.neuralnet.ocr;
+package en.neuralnet.ocr.data;
 
 //This class stores all image data and key image getter and setter methods
 public class ImageData {

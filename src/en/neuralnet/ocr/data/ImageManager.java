@@ -1,4 +1,4 @@
-package en.neuralnet.ocr;
+package en.neuralnet.ocr.data;
 
 import java.io.DataInputStream;
 import java.io.FileInputStream;
@@ -6,17 +6,22 @@ import java.io.IOException;
 
 public class ImageManager {
 	private static final String DATA_FOLDER = "C:\\Users\\scamper\\My Documents\\Neural network\\data\\";
-	private static final boolean IS_LARGE_DATA = true;
+	private static final boolean IS_LARGE_DATA = false;
 	private static final String IMAGE_FILE = IS_LARGE_DATA ? "train-images-idx3-ubyte" : "t10k-images-idx3-ubyte";
 	private static final String LABEL_FILE = IS_LARGE_DATA ? "train-labels-idx1-ubyte" : "t10k-labels-idx1-ubyte";
 	
-	//Reads the labels of the input images and returns them in an array to the main class
 	public static int[] getLabels() {
+		return getLabels(-1);
+	}
+	
+	//Reads the labels of the input images and returns them in an array to the main class
+	public static int[] getLabels(int limit) {
 		DataInputStream labelInputStream;
 		try {
 			labelInputStream = new DataInputStream(new FileInputStream(DATA_FOLDER + LABEL_FILE));
 			labelInputStream.readInt(); // magic number
 			int numLabels = labelInputStream.readInt();
+			if(limit >= 0 && limit <= numLabels) numLabels = limit;
 			
 			//Creates the array of training/testing image labels which 
 			//serve as correct answers as a framework for the NN's guesses
@@ -32,12 +37,18 @@ public class ImageManager {
 		}
 		return null;
 	}
-	//Returns important image data to the main class
+	
 	public static ImageData getImages() {
+		return getImages(-1);
+	}
+	
+	//Returns important image data to the main class
+	public static ImageData getImages(int limit) {
 		try {
 			DataInputStream imgInputStream = new DataInputStream(new FileInputStream(DATA_FOLDER + IMAGE_FILE));
 			imgInputStream.readInt(); // magic number
 			int numImgs = imgInputStream.readInt();
+			if(limit >= 0 && limit <= numImgs) numImgs = limit;
 			int numRows = imgInputStream.readInt();
 			int numCols = imgInputStream.readInt();
 			
