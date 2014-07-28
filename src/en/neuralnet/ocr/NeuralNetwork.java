@@ -5,10 +5,14 @@ import java.awt.Graphics2D;
 import java.awt.Image;
 import java.awt.RenderingHints;
 import java.awt.image.BufferedImage;
+import java.io.File;
+import java.io.IOException;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.SortedMap;
 import java.util.TreeMap;
+
+import javax.imageio.ImageIO;
 /*
  * The NeuralNetwork main class retrieves the grayscale value maps for
  * each input image from the ImageManager class.
@@ -156,7 +160,7 @@ public class NeuralNetwork {
 	}
 	
 	private static BufferedImage bufferAndScale(Image i, int side) {
-	    if(i instanceof BufferedImage) return (BufferedImage) i;
+	    //if(i instanceof BufferedImage) return (BufferedImage) i;
 	    
 	    BufferedImage bi = new BufferedImage(side, side, BufferedImage.TYPE_INT_ARGB);
 	    Graphics2D g = bi.createGraphics();
@@ -169,15 +173,18 @@ public class NeuralNetwork {
 	
 	// TODO remove overlap with main
 	public static char guess(Image i) {
+		//System.out.printf("original image is %d x %d%n", i.getWidth(null), i.getHeight(null));
 	    // resize image to 28 x 28 and buffer it
 	    BufferedImage bi = bufferAndScale(i, 28);
+	    saveImage(bi, "test.png");
 	    
 	    // convert image to double[]
 	    int[] rgbs = bi.getRGB(0, 0, bi.getWidth(), bi.getHeight(), null, 0, bi.getWidth());
 	    double[] image = new double[rgbs.length];
 	    for(int j=0; j<rgbs.length; j++) {
 	        Color c = new Color(rgbs[j]);
-	        image[j] = (c.getRed() + c.getGreen() + c.getBlue()) / 765.0; // 765 = 255 * 3
+	        image[j] = /*1.0 - */((c.getRed() + c.getGreen() + c.getBlue()) / 765.0); // 765 = 255 * 3 TODO: flip number?
+	        //System.out.println(image[j]);
 	    }
 	    
 	    WeightManager weightManager = new WeightManager(28 * 28, CHARS);
@@ -226,4 +233,19 @@ public class NeuralNetwork {
 	public static void updateLearningRate(double loopCount, double totalLoops) {
 		eta = ETA / (1 + (loopCount+1)/totalLoops);
 	}
+	
+	/**
+     * Used for debugging.
+     * 
+     * @param i
+     * @param out
+     */
+    public static final void saveImage(BufferedImage i, String out) {
+    	try {
+    		//System.out.println("saving image with extension " + out.substring(out.lastIndexOf(".") + 1) + " to " + out);
+			ImageIO.write(i, out.substring(out.lastIndexOf(".") + 1), new File(out));
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+    }
 }
