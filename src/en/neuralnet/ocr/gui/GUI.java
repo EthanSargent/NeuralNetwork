@@ -69,7 +69,7 @@ public class GUI extends GraphicsProgram {
             			//System.out.printf("drew %d x %d oval%n", (int) (oval.getWidth() * factor), (int) (oval.getHeight() * factor));
             		}
             		g.dispose();
-            		//saveImage(subImage, "sub_image.png");
+            		//saveImage(subImage, "sub_image.png", false);
             		
             		// compute center of mass of character
             		int[] rawSubImage = subImage.getRGB(0, 0, subImageWidth, subImageHeight, null, 0, subImageWidth);
@@ -77,8 +77,8 @@ public class GUI extends GraphicsProgram {
             		double avgY = 0.0;
             		double totalWeight = 0.0;
             		for(int i=0; i<rawSubImage.length; i++) {
-            			int x = i / subImageWidth;
-            			int y = i % subImageWidth;
+            			int y = i / subImageWidth;
+            			int x = i % subImageWidth;
             			//System.out.printf("coord: (%d,%d)%n", x, y);
             			
             			double gray = 1.0 - convertRGB(rawSubImage[i]);
@@ -86,12 +86,13 @@ public class GUI extends GraphicsProgram {
             			avgX += x * gray;
             			avgY += y * gray;
             			totalWeight += gray;
-            			//System.out.printf("avgX=%f,avgY=%f%n", avgX, avgY);
+            			//System.out.printf("avgX=%f,avgY=%f,totalWeight=%f%n", avgX, avgY, totalWeight);
             		}
             		//System.out.printf("avgX=%f,avgY=%f%n", avgX, avgY);
             		avgX /= totalWeight;
             		avgY /= totalWeight;
             		//System.out.printf("center is (%f,%f)%n", avgX, avgY);
+            		//subImage.setRGB((int) avgX, (int) avgY, Color.RED.getRGB());
             		
             		BufferedImage placed = new BufferedImage(IMAGE_SIDE, IMAGE_SIDE, BufferedImage.TYPE_INT_ARGB);
             		int placedW = placed.getWidth();
@@ -101,7 +102,7 @@ public class GUI extends GraphicsProgram {
             		gPlaced.fillRect(0, 0, placedW, placedH);
             		gPlaced.drawImage(subImage, (int) (placedW / 2 - avgX), (int) (placedH / 2 - avgY), null);
             		gPlaced.dispose();
-            		//saveImage(placed, "placed.png", true);
+            		//saveImage(placed, "placed.png", false);
             		
             		int[] raw = placed.getRGB(0, 0, placedW, placedH, null, 0, placedW);
             		double[] image = new double[IMAGE_SIZE];
