@@ -5,15 +5,15 @@ import en.neuralnet.ocr.data.ImageManager;
 import en.neuralnet.ocr.gui.GUI;
 
 public class Main {
-	private static final boolean GUI = false;
+	private static final boolean GUI = true;
 	
 	public static void main(String[] args) {
 		if(GUI) {
 			new GUI().start(args);
 		} else {
 			Main cli = new Main(true/*, 10*/);
-			cli.train();
-			//cli.test();
+			//cli.train(4);
+			cli.test();
 		}
 	}
 	
@@ -73,6 +73,7 @@ public class Main {
 			System.out.println(" GUESS: " + guess);
 			if(guess == Character.forDigit(labels[i], 10)) correct++;
 		}
+		
 		
 		System.out.printf("%d out of %d correct.%n", correct, images.length);
 	}

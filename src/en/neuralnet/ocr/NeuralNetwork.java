@@ -23,7 +23,7 @@ public class NeuralNetwork {
 	private static final double ETA = 0.2;
 	
 	// defines the hidden layers of the network. each number is the size of a hidden layer.
-	private static final int[] HIDDEN_LAYERS = {2500, 2000, 1500, 1000, 500};
+	private static final int[] HIDDEN_LAYERS = {300,200};
 	
 	// the side of the image used
 	public static final int IMAGE_SIDE = 28;
