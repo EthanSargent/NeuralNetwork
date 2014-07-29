@@ -93,13 +93,6 @@ public class GUI extends GraphicsProgram {
             		avgY /= totalWeight;
             		//System.out.printf("center is (%f,%f)%n", avgX, avgY);
             		
-            		/*g = subImage.createGraphics();
-            		g.setColor(Color.RED);
-            		g.drawLine(0, (int) avgY, subImageWidth, (int) avgY);
-            		g.drawLine((int) avgX, 0, (int) avgX, subImageHeight);
-            		g.dispose();
-            		saveImage(subImage, "sub_image_center.png");*/
-            		
             		BufferedImage placed = new BufferedImage(IMAGE_SIDE, IMAGE_SIDE, BufferedImage.TYPE_INT_ARGB);
             		int placedW = placed.getWidth();
             		int placedH = placed.getHeight();
@@ -112,17 +105,9 @@ public class GUI extends GraphicsProgram {
             		
             		int[] raw = placed.getRGB(0, 0, placedW, placedH, null, 0, placedW);
             		double[] image = new double[IMAGE_SIZE];
-            		//System.out.println("black=" + Color.BLACK.getRGB());
             		for(int i=0; i<image.length; i++) {
-  
-            			//System.out.printf("raw=%d%n", raw[i]);
-            			//Color c = new Color(raw[i], true);
-            			//System.out.printf("%d, %d, %d%n", c.getRed(), c.getGreen(), c.getBlue());
-            			//image[i] = 1.0 - ((c.getRed() + c.getGreen() + c.getBlue()) / 765.0); // 765 = 255 * 3
             			image[i] = 1.0 - convertRGB(raw[i]);
-            			//System.out.println(image[i] + ",");
             		}
-            		//System.out.println();
             		
             		char guess = network.guess(image);
             		JOptionPane.showMessageDialog(GUI.this, "Best guess: " + guess);
@@ -206,12 +191,6 @@ public class GUI extends GraphicsProgram {
     		boolean rt = ImageIO.write(i, out.substring(out.lastIndexOf(".") + 1), new File(out));
 			System.out.println(rt ? "success" : "failure");
 			System.out.println();
-			/*for(int w=0; w<i.getWidth(); w++) {
-				for(int h=0; h<i.getHeight(); h++) {
-					System.out.print(i.getRGB(w, h) + ",");
-				}
-				System.out.println();
-			}*/
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
