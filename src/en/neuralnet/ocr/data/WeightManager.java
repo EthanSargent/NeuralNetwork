@@ -28,8 +28,8 @@ public class WeightManager {
 	private static final String SEP_MAJOR = ":";			// Character separating the parts of each line (character, bias, list of weights)
 	private static final String SEP_MINOR = ",";			// Character separating each weight in list of weights
 	private static final String FILE_PATH = "weights.txt";	// Name of file containing weight archive
-	//private static final double INITIAL_WEIGHT = 0.0;       // initial weight of a new neuron
 	
+	private final Random rand = new Random();
 	private final Map<Integer,Map<Integer,double[]>> weightMap = new HashMap<Integer,Map<Integer,double[]>>();	// Maps name of output neuron to array containing its input weights
 	private final Map<Integer,Map<Integer,Double>>   biasMap   = new HashMap<Integer,Map<Integer,Double>>();    // Maps name of output neuron to bias
 	
@@ -45,7 +45,6 @@ public class WeightManager {
 		
 		// If no weight archive exists, initialize all edge weights and biases to 
 		if(!weightFile.exists()) {
-			Random rand = new Random();
 			int lastLayerSize = imgSize;
 			// for each hidden layer
 			for(int i=0; i<hiddenLayerSizes.length; i++) {
@@ -56,10 +55,10 @@ public class WeightManager {
 					double[] weights = new double[lastLayerSize];
 					// for each weight in this neuron
 					for(int k=0; k<weights.length; k++) {
-						weights[k] = rand.nextDouble() * 0.02 - 0.01;
+						weights[k] = getInitialWeight();
 					}
 					layerWeightMap.put(j, weights);
-					layerBiasMap.put(j, rand.nextDouble() * 0.02 - 0.01);
+					layerBiasMap.put(j, getInitialWeight());
 				}
 				weightMap.put(i, layerWeightMap);
 				biasMap.put(i, layerBiasMap);
@@ -73,10 +72,10 @@ public class WeightManager {
 				double[] weights = new double[lastLayerSize];
 				// for each weight in each output neuron
 				for(int i=0; i<weights.length; i++) {
-					weights[i] = rand.nextDouble() * 0.02 - 0.01;
+					weights[i] = getInitialWeight();
 				}
 				outputWeightMap.put(Character.getNumericValue(c), weights);
-				outputBiasMap.put(Character.getNumericValue(c), rand.nextDouble() * 0.02 - 0.01);
+				outputBiasMap.put(Character.getNumericValue(c), getInitialWeight());
 			}
 			weightMap.put(hiddenLayerSizes.length, outputWeightMap);
 			biasMap.put(hiddenLayerSizes.length, outputBiasMap);
@@ -115,6 +114,12 @@ public class WeightManager {
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
+	}
+	
+	private double getInitialWeight() {
+		//return 0.0;
+		return rand.nextDouble() * 2.0 - 1.0;
+		//return rand.nextDouble() * 0.02 - 0.01
 	}
 	
 	// Getters and setters

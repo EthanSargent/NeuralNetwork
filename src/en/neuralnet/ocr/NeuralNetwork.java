@@ -4,12 +4,8 @@ import java.awt.Graphics2D;
 import java.awt.Image;
 import java.awt.RenderingHints;
 import java.awt.image.BufferedImage;
-import java.io.File;
-import java.io.IOException;
 import java.util.Arrays;
 import java.util.PriorityQueue;
-
-import javax.imageio.ImageIO;
 
 import en.neuralnet.ocr.data.WeightManager;
 /*
@@ -86,12 +82,14 @@ public class NeuralNetwork {
 		// for each neuron in the output layer
 		for(int i=0; i<outputNeurons.length; i++) {
 			Neuron neuron = outputNeurons[i];
-			//System.out.printf("setting delta of output neuron %c with id %d%n", (char) neuron.getID(), neuron.getID());
 			neuron.setDelta(sigmoidPrime(neuron.getWeightedSum()) * ((Character.forDigit(neuron.getID(), 10) == answer ? 1.0 : 0.0) - outputs[i]));
+			//System.out.printf("setting delta of output neuron %c with id %d to %f (answer = %s)%n", Character.forDigit(neuron.getID(), 10), neuron.getID(), neuron.getDelta(), Character.forDigit(neuron.getID(), 10) == answer ? "yes" : "no");
+			//System.out.printf("activation = %f, outputs[%d] = %f%n", sigmoidPrime(neuron.getWeightedSum()), i, outputs[i]);
 		}
 		
 		// going backwards, for each layer except the output layer
 		for(int i=neurons.length-2; i>=0; i--) {
+			//System.out.println("backing hidden layer " + i);
 			// for each neuron in this layer
 			for(int j=0; j<neurons[i].length; j++) {
 				double weightDeltaSum = 0.0;
@@ -112,7 +110,7 @@ public class NeuralNetwork {
 				double[] weights = neurons[i][j].getWeights();
 				// for each weight in the neuron
 				for(int k=0; k<weights.length; k++) {
-					weights[k] += ETA * sigmoidFunction(neurons[i][j].getInputs()[k]) * neurons[i][j].getDelta();
+					weights[k] += ETA * neurons[i][j].getInputs()[k] * neurons[i][j].getDelta();
 					//System.out.println(ETA * sigmoidFunction(neurons[i][j].getInputs()[k]) * neurons[i][j].getDelta());
 				}
 				neurons[i][j].setWeights(weights);
