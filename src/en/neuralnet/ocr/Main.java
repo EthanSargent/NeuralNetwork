@@ -5,15 +5,15 @@ import en.neuralnet.ocr.data.ImageManager;
 import en.neuralnet.ocr.gui.GUI;
 
 public class Main {
-	private static final boolean GUI = false;
+	private static final boolean GUI = true;
 	
 	public static void main(String[] args) {
 		if(GUI) {
 			new GUI().start(args);
 		} else {
-			Main cli = new Main(true/*, 10*/);
-			cli.train(5);
-			//cli.test();
+			Main cli = new Main(false/*, 10*/);
+			//cli.train(5);
+			cli.test();
 		}
 	}
 	

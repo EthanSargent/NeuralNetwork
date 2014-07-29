@@ -19,19 +19,25 @@ import en.neuralnet.ocr.NeuralNetwork;
 import acm.graphics.GOval;
 import acm.program.GraphicsProgram;
 
+import static en.neuralnet.ocr.NeuralNetwork.*;
+
 public class GUI extends GraphicsProgram {
+	public static final int APPLICATION_WIDTH = 100;
+	public static final int APPLICATION_HEIGHT = 200;
+	
     private static final long serialVersionUID = -1655816033198879264L;
-    private static final double PEN_SIZE = 2.0;
     
+    private final double penSize;
     private final NeuralNetwork network = new NeuralNetwork();
     private List<GOval> path = new ArrayList<GOval>();
-    private double minX;
-    private double maxX;
-    private double minY;
-    private double maxY;
+    private double minX = Double.MAX_VALUE;
+    private double maxX = -Double.MAX_VALUE;
+    private double minY = Double.MAX_VALUE;
+    private double maxY = -Double.MAX_VALUE;
     
     public GUI() {
         setTitle("OCR via Neural Network");
+        penSize = 2.0 / (28.0 / Math.max(APPLICATION_WIDTH, APPLICATION_HEIGHT));
         
         JButton submit = new JButton("Submit");
         submit.addActionListener(new ActionListener() {
@@ -40,24 +46,35 @@ public class GUI extends GraphicsProgram {
             	if(path.size() <= 0) {
             		JOptionPane.showMessageDialog(GUI.this, "Nothing to submit!");
             	} else {
-            		BufferedImage bi = new BufferedImage((int) (maxX - minX), (int) (maxY - minY), BufferedImage.TYPE_INT_ARGB);
+            		System.out.printf("x = [%f,%f], y = [%f,%f]%n", minX, maxX, minY, maxY);
+            		int w = (int) (maxX - minX);
+            		int h = (int) (maxY - minY);
+            		double factor = 28.0 / Math.max(w, h);
+            		System.out.printf("cut image is %d x %d%n", w, h);
+            		System.out.printf("max is %d%n", Math.max(w, h));
+            		System.out.printf("scale factor is %f%n", factor);
+            		
+            		BufferedImage bi = new BufferedImage(IMAGE_SIDE, IMAGE_SIDE, BufferedImage.TYPE_INT_ARGB);
             		Graphics2D g = bi.createGraphics();
             		g.setColor(Color.BLACK);
             		for(GOval oval : path) {
-            			g.fillOval((int) (oval.getX() - minX), (int) (oval.getY() - minY), (int) oval.getWidth(), (int) oval.getHeight());
+            			g.fillOval((int) ((oval.getX() - minX) * factor), (int) ((oval.getY() - minY) * factor), (int) (oval.getWidth() * factor), (int) (oval.getHeight() * factor));
             			remove(oval);
+            			//System.out.printf("drew oval at (%d,%d)%n", (int) ((oval.getX() - minX) * factor), (int) ((oval.getY() - minY) * factor));
+            			//System.out.printf("drew %d x %d oval%n", (int) (oval.getWidth() * factor), (int) (oval.getHeight() * factor));
             		}
             		g.dispose();
-            		//saveImage(bi, "painted.png");
-            		int w = bi.getWidth();
-            		int h = bi.getHeight();
-            		double[] image = new double[w * h];
-            		int[] raw = new int[w * h];
-            		raw = bi.getRGB(0, 0, w, h, raw, 0, w);
+            		saveImage(bi, "original.png");
+            		
+            		int[] raw = bi.getRGB(0, 0, bi.getWidth(), bi.getHeight(), null, 0, w);
+            		
+            		double[] image = new double[IMAGE_SIZE];
             		for(int i=0; i<image.length; i++) {
             			Color c = new Color(raw[i]);
-            			image[i] = (c.getRed() + c.getGreen() + c.getBlue()) / 765.0; // 765 = 255 * 3
+            			image[i] = 1.0 - ((c.getRed() + c.getGreen() + c.getBlue()) / 765.0); // 765 = 255 * 3
+            			System.out.print(image[i] + ",");
             		}
+            		
             		char guess = network.guess(image);
             		JOptionPane.showMessageDialog(GUI.this, "Best guess: " + guess);
             		path.clear();
@@ -79,15 +96,19 @@ public class GUI extends GraphicsProgram {
     }
     
     private void mouseMove(int x, int y) {
-    	GOval oval = new GOval(x, y, PEN_SIZE, PEN_SIZE);
+    	GOval oval = new GOval(x, y, penSize, penSize);
     	oval.setFilled(true);
     	add(oval);
         path.add(oval);
         
-        if(x < minX) minX = x;
-        if(x > maxX) maxX = x;
-        if(y < minY) minY = y;
-        if(y > maxY) maxY = y;
+        double bigX = x + penSize / 2;
+        double smallX = x - penSize / 2;
+        double bigY = y + penSize / 2;
+        double smallY = y - penSize / 2;
+        if(smallX < minX) minX = smallX;
+        if(bigX > maxX) maxX = bigX;
+        if(smallY < minY) minY = smallY;
+        if(bigY > maxY) maxY = bigY;
     }
     
     /**
@@ -96,18 +117,18 @@ public class GUI extends GraphicsProgram {
      * @param i
      * @param out
      */
-    private static final void saveImage(BufferedImage i, String out) {
+    public static final void saveImage(BufferedImage i, String out) {
     	try {
     		System.out.println("saving image with extension " + out.substring(out.lastIndexOf(".") + 1) + " to " + out);
     		boolean rt = ImageIO.write(i, out.substring(out.lastIndexOf(".") + 1), new File(out));
 			System.out.println(rt ? "success" : "failure");
 			System.out.println();
-			for(int w=0; w<i.getWidth(); w++) {
+			/*for(int w=0; w<i.getWidth(); w++) {
 				for(int h=0; h<i.getHeight(); h++) {
 					System.out.print(i.getRGB(w, h) + ",");
 				}
 				System.out.println();
-			}
+			}*/
 		} catch (IOException e) {
 			e.printStackTrace();
 		}

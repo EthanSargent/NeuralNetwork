@@ -1,9 +1,5 @@
 package en.neuralnet.ocr;
 
-import java.awt.Graphics2D;
-import java.awt.Image;
-import java.awt.RenderingHints;
-import java.awt.image.BufferedImage;
 import java.util.Arrays;
 import java.util.PriorityQueue;
 
@@ -29,8 +25,11 @@ public class NeuralNetwork {
 	// defines the hidden layers of the network. each number is the size of a hidden layer.
 	private static final int[] HIDDEN_LAYERS = {300};
 	
+	// the side of the image used
+	public static final int IMAGE_SIDE = 28;
+	
 	// the number of pixels in the image
-	private static final int IMAGE_SIZE = 28 * 28;
+	public static final int IMAGE_SIZE = IMAGE_SIDE * IMAGE_SIDE;
 	
 	private final WeightManager weightManager;
 	private final Neuron[][] neurons = new Neuron[HIDDEN_LAYERS.length + 1][];
@@ -169,22 +168,10 @@ public class NeuralNetwork {
 		while((g = queue.poll()) != null) {
 			System.out.printf("\tGuess %d: %c (%f)%n", i, g.getCharacter(), g.getValue());
 			i++;
-			if(i > 5) break;
+			if(i > 4) break;
 		}
 		
 		return answer;
-	}
-	
-	private static BufferedImage bufferAndScale(Image i, int side) {
-	    //if(i instanceof BufferedImage) return (BufferedImage) i;
-	    
-	    BufferedImage bi = new BufferedImage(side, side, BufferedImage.TYPE_INT_ARGB);
-	    Graphics2D g = bi.createGraphics();
-	    g.addRenderingHints(new RenderingHints(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_QUALITY));
-	    g.drawImage(i, 0, 0, side, side, null);
-	    g.dispose();
-	    
-	    return bi;
 	}
 
 	private static double sigmoidPrime(double x) {
