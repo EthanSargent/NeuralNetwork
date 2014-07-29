@@ -6,19 +6,28 @@ import java.io.IOException;
 
 public class ImageManager {
 	private static final String DATA_FOLDER = "C:\\Users\\scamper\\My Documents\\Neural network\\data\\";
-	private static final boolean IS_LARGE_DATA = false;
-	private static final String IMAGE_FILE = IS_LARGE_DATA ? "train-images-idx3-ubyte" : "t10k-images-idx3-ubyte";
-	private static final String LABEL_FILE = IS_LARGE_DATA ? "train-labels-idx1-ubyte" : "t10k-labels-idx1-ubyte";
+	private static final String IMAGE_FILE_LARGE = "train-images-idx3-ubyte";
+	private static final String IMAGE_FILE_SMALL = "t10k-images-idx3-ubyte";
+	private static final String LABEL_FILE_LARGE = "train-labels-idx1-ubyte";
+	private static final String LABEL_FILE_SMALL = "t10k-labels-idx1-ubyte";
 	
-	public static int[] getLabels() {
+	private final String labelFilePath;
+	private final String imageFilePath;
+	
+	public ImageManager(boolean useLargeData) {
+		labelFilePath = DATA_FOLDER + (useLargeData ? LABEL_FILE_LARGE : LABEL_FILE_SMALL);
+		imageFilePath = DATA_FOLDER + (useLargeData ? IMAGE_FILE_LARGE : IMAGE_FILE_SMALL);
+	}
+	
+	public int[] getLabels() {
 		return getLabels(-1);
 	}
 	
 	//Reads the labels of the input images and returns them in an array to the main class
-	public static int[] getLabels(int limit) {
+	public int[] getLabels(int limit) {
 		DataInputStream labelInputStream;
 		try {
-			labelInputStream = new DataInputStream(new FileInputStream(DATA_FOLDER + LABEL_FILE));
+			labelInputStream = new DataInputStream(new FileInputStream(labelFilePath));
 			labelInputStream.readInt(); // magic number
 			int numLabels = labelInputStream.readInt();
 			if(limit >= 0 && limit <= numLabels) numLabels = limit;
@@ -38,14 +47,14 @@ public class ImageManager {
 		return null;
 	}
 	
-	public static ImageData getImages() {
+	public ImageData getImages() {
 		return getImages(-1);
 	}
 	
 	//Returns important image data to the main class
-	public static ImageData getImages(int limit) {
+	public ImageData getImages(int limit) {
 		try {
-			DataInputStream imgInputStream = new DataInputStream(new FileInputStream(DATA_FOLDER + IMAGE_FILE));
+			DataInputStream imgInputStream = new DataInputStream(new FileInputStream(imageFilePath));
 			imgInputStream.readInt(); // magic number
 			int numImgs = imgInputStream.readInt();
 			if(limit >= 0 && limit <= numImgs) numImgs = limit;

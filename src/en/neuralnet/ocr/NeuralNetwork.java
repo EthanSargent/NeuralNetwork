@@ -6,10 +6,8 @@ import java.awt.RenderingHints;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
-import java.util.Map.Entry;
-import java.util.Set;
-import java.util.SortedMap;
-import java.util.TreeMap;
+import java.util.Arrays;
+import java.util.PriorityQueue;
 
 import javax.imageio.ImageIO;
 
@@ -63,9 +61,11 @@ public class NeuralNetwork {
 	 * @return The outputs of the last layer of the network.
 	 */
 	private double[] forwardPropagate(double[] input) {
+		//System.out.println("forward propagating");
 		// for each layer i in the network
 		double[] lastOutput = input;
 		for(int i=0; i<neurons.length; i++) {
+			//System.out.printf("propagating layer with %d nodes. lastOutput is size %d.%n", neurons[i].length, lastOutput.length);
 			// for each neuron j in the layer
 			double[] thisOutput = new double[neurons[i].length];
 			for(int j=0; j<neurons[i].length; j++) {
@@ -74,6 +74,7 @@ public class NeuralNetwork {
 			}
 			lastOutput = thisOutput;
 		}
+		//System.out.println();
 		return lastOutput;
 	}
 	
@@ -81,10 +82,12 @@ public class NeuralNetwork {
 		double[] outputs = forwardPropagate(image);
 		
 		Neuron[] outputNeurons = neurons[neurons.length - 1];
+		//System.out.printf("there are %d output neurons%n", outputNeurons.length);
 		// for each neuron in the output layer
 		for(int i=0; i<outputNeurons.length; i++) {
 			Neuron neuron = outputNeurons[i];
-			neuron.setDelta(sigmoidPrime(neuron.getWeightedSum()) * ((((char) neuron.getID()) == answer ? 1.0 : 0.0) - outputs[i]));
+			//System.out.printf("setting delta of output neuron %c with id %d%n", (char) neuron.getID(), neuron.getID());
+			neuron.setDelta(sigmoidPrime(neuron.getWeightedSum()) * ((Character.forDigit(neuron.getID(), 10) == answer ? 1.0 : 0.0) - outputs[i]));
 		}
 		
 		// going backwards, for each layer except the output layer
@@ -110,7 +113,7 @@ public class NeuralNetwork {
 				// for each weight in the neuron
 				for(int k=0; k<weights.length; k++) {
 					weights[k] += ETA * sigmoidFunction(neurons[i][j].getInputs()[k]) * neurons[i][j].getDelta();
-					System.out.println(ETA * sigmoidFunction(neurons[i][j].getInputs()[k]) * neurons[i][j].getDelta());
+					//System.out.println(ETA * sigmoidFunction(neurons[i][j].getInputs()[k]) * neurons[i][j].getDelta());
 				}
 				neurons[i][j].setWeights(weights);
 				weightManager.setWeights(i, neurons[i][j].getID(), weights);
@@ -129,22 +132,49 @@ public class NeuralNetwork {
 		weightManager.save();
 	}
 	
+	private static class Guess implements Comparable<Guess> {
+		private final char character;
+		private final double value;
+		
+		public Guess(char character, double value) {
+			this.character = character;
+			this.value = value;
+		}
+		
+		public char getCharacter() {
+			return character;
+		}
+		
+		public double getValue() {
+			return value;
+		}
+		
+		@Override
+		public int compareTo(Guess arg0) {
+			return new Double(arg0.getValue()).compareTo(getValue());
+		}
+	}
+	
 	public char guess(double[] image) {
 		double[] outputs = forwardPropagate(image);
+		System.out.println("outputs: " + Arrays.toString(outputs));
 		
-		SortedMap<Double,Character> solutions = new TreeMap<Double,Character>();
-		for (int j = 0; j < CHARS.length; j ++) {
-			solutions.put(outputs[j], CHARS[j]);
+		PriorityQueue<Guess> queue = new PriorityQueue<Guess>();
+		for(int i=0; i<outputs.length; i++) {
+			queue.add(new Guess(CHARS[i], outputs[i]));
 		}
 		
-		Set<Entry<Double,Character>> solSet = solutions.entrySet();
-		int j = 0;
-		for (Entry<Double,Character> e : solSet) {
-			if(j >= 5) System.out.println("\tGuess " + (CHARS.length - j) + ": " + e.getValue());
-			j++;
+		char answer = queue.peek().getCharacter();
+		
+		Guess g;
+		int i = 0;
+		while((g = queue.poll()) != null) {
+			System.out.printf("\tGuess %d: %c (%f)%n", i, g.getCharacter(), g.getValue());
+			i++;
+			if(i > 5) break;
 		}
 		
-		return solutions.get(solutions.lastKey());
+		return answer;
 	}
 	
 	private static BufferedImage bufferAndScale(Image i, int side) {
@@ -168,19 +198,4 @@ public class NeuralNetwork {
 	public static double sigmoidFunction(double in) {
 		return (1/(1 + Math.exp(-in)));
 	}
-	
-	/**
-     * Used for debugging.
-     * 
-     * @param i
-     * @param out
-     */
-    public static final void saveImage(BufferedImage i, String out) {
-    	try {
-    		//System.out.println("saving image with extension " + out.substring(out.lastIndexOf(".") + 1) + " to " + out);
-			ImageIO.write(i, out.substring(out.lastIndexOf(".") + 1), new File(out));
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-    }
 }
