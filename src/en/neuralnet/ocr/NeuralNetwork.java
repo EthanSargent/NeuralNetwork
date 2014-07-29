@@ -28,6 +28,9 @@ public class NeuralNetwork {
 	// the side of the image used
 	public static final int IMAGE_SIDE = 28;
 	
+	// the length of the side of a square that can contain the entire contents of the character in the image
+	public static final int IMAGE_SUB_SIDE = 20;
+	
 	// the number of pixels in the image
 	public static final int IMAGE_SIZE = IMAGE_SIDE * IMAGE_SIDE;
 	
