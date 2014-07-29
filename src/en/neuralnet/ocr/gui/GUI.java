@@ -22,7 +22,7 @@ import acm.program.GraphicsProgram;
 import static en.neuralnet.ocr.NeuralNetwork.*;
 
 public class GUI extends GraphicsProgram {
-	public static final int APPLICATION_WIDTH = 100;
+	public static final int APPLICATION_WIDTH = 150;
 	public static final int APPLICATION_HEIGHT = 200;
 	
     private static final long serialVersionUID = -1655816033198879264L;
@@ -46,16 +46,18 @@ public class GUI extends GraphicsProgram {
             	if(path.size() <= 0) {
             		JOptionPane.showMessageDialog(GUI.this, "Nothing to submit!");
             	} else {
-            		System.out.printf("x = [%f,%f], y = [%f,%f]%n", minX, maxX, minY, maxY);
+            		//System.out.printf("x = [%f,%f], y = [%f,%f]%n", minX, maxX, minY, maxY);
             		int w = (int) (maxX - minX);
             		int h = (int) (maxY - minY);
             		double factor = 28.0 / Math.max(w, h);
-            		System.out.printf("cut image is %d x %d%n", w, h);
-            		System.out.printf("max is %d%n", Math.max(w, h));
-            		System.out.printf("scale factor is %f%n", factor);
+            		//System.out.printf("cut image is %d x %d%n", w, h);
+            		//System.out.printf("max is %d%n", Math.max(w, h));
+            		//System.out.printf("scale factor is %f%n", factor);
             		
             		BufferedImage bi = new BufferedImage(IMAGE_SIDE, IMAGE_SIDE, BufferedImage.TYPE_INT_ARGB);
             		Graphics2D g = bi.createGraphics();
+            		g.setColor(Color.WHITE);
+            		g.fillRect(0, 0, bi.getWidth(), bi.getHeight());
             		g.setColor(Color.BLACK);
             		for(GOval oval : path) {
             			g.fillOval((int) ((oval.getX() - minX) * factor), (int) ((oval.getY() - minY) * factor), (int) (oval.getWidth() * factor), (int) (oval.getHeight() * factor));
@@ -66,14 +68,19 @@ public class GUI extends GraphicsProgram {
             		g.dispose();
             		saveImage(bi, "original.png");
             		
-            		int[] raw = bi.getRGB(0, 0, bi.getWidth(), bi.getHeight(), null, 0, w);
+            		int[] raw = bi.getRGB(0, 0, bi.getWidth(), bi.getHeight(), null, 0, bi.getWidth());
             		
             		double[] image = new double[IMAGE_SIZE];
+            		//System.out.println("black=" + Color.BLACK.getRGB());
             		for(int i=0; i<image.length; i++) {
-            			Color c = new Color(raw[i]);
+  
+            			//System.out.printf("raw=%d%n", raw[i]);
+            			Color c = new Color(raw[i], true);
+            			//System.out.printf("%d, %d, %d%n", c.getRed(), c.getGreen(), c.getBlue());
             			image[i] = 1.0 - ((c.getRed() + c.getGreen() + c.getBlue()) / 765.0); // 765 = 255 * 3
-            			System.out.print(image[i] + ",");
+            			//System.out.println(image[i] + ",");
             		}
+            		//System.out.println();
             		
             		char guess = network.guess(image);
             		JOptionPane.showMessageDialog(GUI.this, "Best guess: " + guess);
@@ -81,6 +88,17 @@ public class GUI extends GraphicsProgram {
             	}
             }});
         add(submit, NORTH);
+        
+        JButton clear = new JButton("Clear");
+        clear.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent arg0) {
+				for(GOval goval : path) {
+					remove(goval);
+				}
+				path.clear();
+			}});
+        add(clear, NORTH);
         
         addMouseListeners();
     }
