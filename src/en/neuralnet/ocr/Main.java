@@ -5,7 +5,7 @@ import en.neuralnet.ocr.data.ImageManager;
 import en.neuralnet.ocr.gui.GUI;
 
 public class Main {
-	private static final boolean GUI = false;
+	private static final boolean GUI = true;
 	private static final boolean LARGE_DATA = false;
 	private static final boolean DEBUG = false;
 	

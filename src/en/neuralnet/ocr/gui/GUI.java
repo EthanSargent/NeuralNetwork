@@ -22,8 +22,8 @@ import acm.program.GraphicsProgram;
 import static en.neuralnet.ocr.NeuralNetwork.*;
 
 public class GUI extends GraphicsProgram {
-	public static final int APPLICATION_WIDTH = 150;
-	public static final int APPLICATION_HEIGHT = 200;
+	public static final int APPLICATION_WIDTH = 800;
+	public static final int APPLICATION_HEIGHT = 600;
 	
     private static final long serialVersionUID = -1655816033198879264L;
     
