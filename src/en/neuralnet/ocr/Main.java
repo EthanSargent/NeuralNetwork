@@ -76,6 +76,7 @@ public class Main {
 			if(guess == Character.forDigit(labels[i], 10)) correct++;
 		}
 		
+		
 		System.out.printf("%d out of %d correct.%n", correct, images.length);
 	}
 }
