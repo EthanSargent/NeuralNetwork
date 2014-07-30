@@ -6,14 +6,16 @@ import en.neuralnet.ocr.gui.GUI;
 
 public class Main {
 	private static final boolean GUI = false;
+	private static final boolean LARGE_DATA = false;
+	private static final boolean DEBUG = false;
 	
 	public static void main(String[] args) {
 		if(GUI) {
 			new GUI().start(args);
 		} else {
-			Main cli = new Main(true/*, 10*/);
-			cli.train();
-			//cli.test();
+			Main cli = new Main(LARGE_DATA/*, 10*/);
+			//cli.train(6);
+			cli.test();
 		}
 	}
 	
@@ -43,7 +45,7 @@ public class Main {
 		//Makes sure each image is assigned a correct answer label
 		if(labels.length != images.length) throw new IllegalArgumentException("Number of labels is not equal to number of images.");
 		
-		this.network = new NeuralNetwork();
+		this.network = new NeuralNetwork(DEBUG);
 	}
 	
 	public void train() {

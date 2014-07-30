@@ -118,8 +118,8 @@ public class WeightManager {
 	
 	private double getInitialWeight() {
 		//return 0.0;
-		return rand.nextDouble() * 2.0 - 1.0;
-		//return rand.nextDouble() * 0.02 - 0.01
+		//return rand.nextDouble() * 2.0 - 1.0;
+		return rand.nextDouble() * 0.02 - 0.01;
 	}
 	
 	// Getters and setters

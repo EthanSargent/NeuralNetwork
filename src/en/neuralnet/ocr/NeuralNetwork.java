@@ -20,10 +20,10 @@ public class NeuralNetwork {
 	private static final char[] CHARS = "0123456789".toCharArray();
 	
 	//Final Learning Speed
-	private static final double ETA = 0.2;
+	private static final double ETA = 0.01;
 	
 	// defines the hidden layers of the network. each number is the size of a hidden layer.
-	private static final int[] HIDDEN_LAYERS = {2500, 2000, 1500, 1000, 500};
+	private static final int[] HIDDEN_LAYERS = {300};
 	
 	// the side of the image used
 	public static final int IMAGE_SIDE = 28;
@@ -34,10 +34,16 @@ public class NeuralNetwork {
 	// the number of pixels in the image
 	public static final int IMAGE_SIZE = IMAGE_SIDE * IMAGE_SIDE;
 	
+	private final boolean debug;
 	private final WeightManager weightManager;
 	private final Neuron[][] neurons = new Neuron[HIDDEN_LAYERS.length + 1][];
 	
 	public NeuralNetwork() {
+		this(false);
+	}
+	
+	public NeuralNetwork(boolean debug) {
+		this.debug = debug;
 		this.weightManager = new WeightManager(IMAGE_SIZE, HIDDEN_LAYERS, CHARS);
 		
 		for(int j=0; j<neurons.length; j++) {
@@ -59,11 +65,11 @@ public class NeuralNetwork {
 	 * @return The outputs of the last layer of the network.
 	 */
 	private double[] forwardPropagate(double[] input) {
-		//System.out.println("forward propagating");
+		debugln("Forward propagating...");
 		// for each layer i in the network
 		double[] lastOutput = input;
 		for(int i=0; i<neurons.length; i++) {
-			//System.out.printf("propagating layer with %d nodes. lastOutput is size %d.%n", neurons[i].length, lastOutput.length);
+			debugln("    Layer " + i);
 			// for each neuron j in the layer
 			double[] thisOutput = new double[neurons[i].length];
 			for(int j=0; j<neurons[i].length; j++) {
@@ -175,6 +181,18 @@ public class NeuralNetwork {
 		}
 		
 		return answer;
+	}
+	
+	private void debug(String text) {
+		if(debug) System.out.print(text);
+	}
+	
+	private void debugln(String text) {
+		if(debug) System.out.println(text);
+	}
+	
+	private void debugf(String text, Object... args) {
+		if(debug) System.out.printf(text, args);
 	}
 
 	private static double sigmoidPrime(double x) {
