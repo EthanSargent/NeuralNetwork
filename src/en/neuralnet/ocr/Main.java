@@ -2,10 +2,12 @@ package en.neuralnet.ocr;
 
 import en.neuralnet.ocr.data.ImageData;
 import en.neuralnet.ocr.data.ImageManager;
+import en.neuralnet.ocr.data.MNISTManager;
+import en.neuralnet.ocr.data.UCIManager;
 import en.neuralnet.ocr.gui.GUI;
 
 public class Main {
-	private static final boolean GUI = true;
+	private static final boolean GUI = false;
 	private static final boolean LARGE_DATA = false;
 	private static final boolean DEBUG = false;
 	
@@ -29,7 +31,8 @@ public class Main {
 	}
 	
 	public Main(boolean useLargeData, int limit) {
-		this.im = new ImageManager(useLargeData);
+		//this.im = new MNISTManager(useLargeData);
+		this.im = new UCIManager();
 		
 		//Retrieving image labels (correct answers that backstop the training
 		//process of the neural network)

@@ -4,7 +4,7 @@ import java.awt.Color;
 import java.awt.image.BufferedImage;
 
 import en.neuralnet.ocr.data.ImageData;
-import en.neuralnet.ocr.data.ImageManager;
+import en.neuralnet.ocr.data.MNISTManager;
 import en.neuralnet.ocr.gui.GUI;
 
 /**
@@ -14,12 +14,12 @@ import en.neuralnet.ocr.gui.GUI;
  *
  */
 public class ImageViewer {
-	private static final boolean DRAW_BORDER = true;
+	private static final boolean DRAW_BORDER = false;
 	private static final int SAMPLES = 25;
 	private static final String FOLDER = "example_data\\";
 	
 	public static void main(String[] args) {
-		ImageManager im = new ImageManager(false);
+		MNISTManager im = new MNISTManager(false);
 		ImageData imageData = im.getImages(SAMPLES);
 		double[][] images = imageData.getImages();
 		
