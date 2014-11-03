@@ -113,6 +113,11 @@ public class GUI extends GraphicsProgram {
             		char guess = network.guess(image);
             		JOptionPane.showMessageDialog(GUI.this, "Best guess: " + guess);
             		path.clear();
+            		
+            		minX = Double.MAX_VALUE;
+            	    maxX = -Double.MAX_VALUE;
+            	    minY = Double.MAX_VALUE;
+            	    maxY = -Double.MAX_VALUE;
             	}
             }});
         add(submit, NORTH);
@@ -125,6 +130,11 @@ public class GUI extends GraphicsProgram {
 					remove(goval);
 				}
 				path.clear();
+
+        	    minX = Double.MAX_VALUE;
+        	    maxX = -Double.MAX_VALUE;
+        	    minY = Double.MAX_VALUE;
+        	    maxY = -Double.MAX_VALUE;
 			}});
         add(clear, NORTH);
         
