@@ -31,8 +31,8 @@ public class Main {
 	}
 	
 	public Main(boolean useLargeData, int limit) {
-		//this.im = new MNISTManager(useLargeData);
-		this.im = new UCIManager();
+		this.im = new MNISTManager(useLargeData);
+		//this.im = new UCIManager();
 		
 		//Retrieving image labels (correct answers that backstop the training
 		//process of the neural network)
@@ -73,8 +73,8 @@ public class Main {
 	public void test() {
 		int correct = 0;
 		for(int i=0; i<images.length; i++) {
-			System.out.println("ANSWER: " + labels[i]);
-			char guess = network.guess(images[i]);
+			System.out.println("\nANSWER: " + labels[i]);
+			char guess = network.guessChar(images[i]);
 			System.out.println(" GUESS: " + guess);
 			if(guess == Character.forDigit(labels[i], 10)) correct++;
 		}

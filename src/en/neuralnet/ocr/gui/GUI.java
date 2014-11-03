@@ -17,15 +17,24 @@ import javax.swing.JButton;
 import javax.swing.JOptionPane;
 
 import en.neuralnet.ocr.NeuralNetwork;
+import en.neuralnet.util.Guess;
+import en.neuralnet.util.ImageViewer;
 import acm.graphics.GOval;
 import acm.program.GraphicsProgram;
 import static en.neuralnet.ocr.NeuralNetwork.*;
 
 public class GUI extends GraphicsProgram {
-	public static final int APPLICATION_WIDTH = 800;
-	public static final int APPLICATION_HEIGHT = 600;
+	private static final int INTERACTORS_BAR_HEIGHT = 40; //hack
+	
+	public static final int APPLICATION_WIDTH = 300*2;
+	public static final int APPLICATION_HEIGHT = APPLICATION_WIDTH/2 + INTERACTORS_BAR_HEIGHT;
+	
+	public static final int DRAWING_AREA_WIDTH = APPLICATION_WIDTH/2;
+	public static final int DRAWING_AREA_HEIGHT = APPLICATION_HEIGHT - INTERACTORS_BAR_HEIGHT;
 	
     private static final long serialVersionUID = -1655816033198879264L;
+    
+    private ResultsDisplay resultsDisplay;
     
     private final double penSize;
     private final NeuralNetwork network = new NeuralNetwork();
@@ -35,9 +44,12 @@ public class GUI extends GraphicsProgram {
     private double minY = Double.MAX_VALUE;
     private double maxY = -Double.MAX_VALUE;
     
-    public GUI() {
+    public GUI() {    	
         setTitle("OCR via Neural Network");
-        penSize = 2.0 / (28.0 / Math.max(APPLICATION_WIDTH, APPLICATION_HEIGHT));
+        penSize = 2.0 / (28.0 / Math.max(DRAWING_AREA_WIDTH, DRAWING_AREA_HEIGHT));
+        
+        resultsDisplay = new ResultsDisplay(APPLICATION_WIDTH - DRAWING_AREA_WIDTH, DRAWING_AREA_HEIGHT);
+        add(resultsDisplay);
         
         JButton submit = new JButton("Submit");
         submit.addActionListener(new ActionListener() {
@@ -53,7 +65,7 @@ public class GUI extends GraphicsProgram {
             		//System.out.printf("cut image is %d x %d%n", w, h);
             		//System.out.printf("max is %d%n", Math.max(w, h));
             		//System.out.printf("scale factor is %f%n", factor);
-            		
+
             		BufferedImage subImage = new BufferedImage(IMAGE_SUB_SIDE, IMAGE_SUB_SIDE, BufferedImage.TYPE_INT_ARGB);
             		int subImageWidth = subImage.getWidth();
             		int subImageHeight = subImage.getHeight();
@@ -64,13 +76,13 @@ public class GUI extends GraphicsProgram {
             		g.setColor(Color.BLACK);
             		for(GOval oval : path) {
             			g.fillOval((int) ((oval.getX() - minX) * factor), (int) ((oval.getY() - minY) * factor), (int) (oval.getWidth() * factor), (int) (oval.getHeight() * factor));
-            			remove(oval);
+            			//remove(oval);
             			//System.out.printf("drew oval at (%d,%d)%n", (int) ((oval.getX() - minX) * factor), (int) ((oval.getY() - minY) * factor));
             			//System.out.printf("drew %d x %d oval%n", (int) (oval.getWidth() * factor), (int) (oval.getHeight() * factor));
             		}
             		g.dispose();
             		//saveImage(subImage, "sub_image.png", false);
-            		
+
             		// compute center of mass of character
             		int[] rawSubImage = subImage.getRGB(0, 0, subImageWidth, subImageHeight, null, 0, subImageWidth);
             		double avgX = 0.0;
@@ -110,8 +122,10 @@ public class GUI extends GraphicsProgram {
             			image[i] = 1.0 - convertRGB(raw[i]);
             		}
             		
-            		char guess = network.guess(image);
-            		JOptionPane.showMessageDialog(GUI.this, "Best guess: " + guess);
+            		ImageViewer.printImgValues(image);
+            		ArrayList<Guess> guesses = network.guessReport(image);
+            		resultsDisplay.report(guesses);
+            		//JOptionPane.showMessageDialog(GUI.this, "Best guess: " + guess);
             		path.clear();
             		
             		minX = Double.MAX_VALUE;
@@ -126,9 +140,9 @@ public class GUI extends GraphicsProgram {
         clear.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent arg0) {
-				for(GOval goval : path) {
-					remove(goval);
-				}
+				resultsDisplay.clearDisplay();
+				
+				removeAll();
 				path.clear();
 
         	    minX = Double.MAX_VALUE;
@@ -151,7 +165,13 @@ public class GUI extends GraphicsProgram {
     	mouseMove(e.getX(), e.getY());
     }
     
-    private void mouseMove(int x, int y) {
+    private void mouseMove(int x, int y) {  	
+    	int hPS = (int) (penSize/2);
+    	if (x > (DRAWING_AREA_WIDTH - hPS)) x = DRAWING_AREA_WIDTH - hPS;
+    	if (x < hPS) x = hPS;
+    	if (y > (DRAWING_AREA_HEIGHT - hPS)) y = DRAWING_AREA_HEIGHT - hPS;
+    	if (y < hPS) y = hPS;
+    	
     	GOval oval = new GOval(x - penSize / 2, y - penSize / 2, penSize, penSize);
     	oval.setFilled(true);
     	add(oval);
