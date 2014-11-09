@@ -1,5 +1,8 @@
 package en.neuralnet.ocr;
 
+import en.neuralnet.util.*;
+
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.PriorityQueue;
 
@@ -138,30 +141,16 @@ public class NeuralNetwork {
 		weightManager.save();
 	}
 	
-	private static class Guess implements Comparable<Guess> {
-		private final char character;
-		private final double value;
-		
-		public Guess(char character, double value) {
-			this.character = character;
-			this.value = value;
+	public ArrayList<Guess> guessReport(double[] image) {
+		double[] outputs = forwardPropagate(image);
+		ArrayList<Guess> out = new ArrayList<Guess>();
+		for (int i = 0; i < outputs.length; i++) {
+			out.add(new Guess(CHARS[i], outputs[i]));
 		}
-		
-		public char getCharacter() {
-			return character;
-		}
-		
-		public double getValue() {
-			return value;
-		}
-		
-		@Override
-		public int compareTo(Guess arg0) {
-			return new Double(arg0.getValue()).compareTo(getValue());
-		}
+		return out;
 	}
 	
-	public char guess(double[] image) {
+	public char guessChar(double[] image) {
 		double[] outputs = forwardPropagate(image);
 		System.out.println("outputs: " + Arrays.toString(outputs));
 		

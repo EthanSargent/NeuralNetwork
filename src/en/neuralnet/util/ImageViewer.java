@@ -15,8 +15,8 @@ import en.neuralnet.ocr.gui.GUI;
  */
 public class ImageViewer {
 	private static final boolean DRAW_BORDER = false;
-	private static final int SAMPLES = 25;
-	private static final String FOLDER = "example_data\\";
+	private static final int SAMPLES = 10;
+	private static final String FOLDER = "";
 	
 	public static void main(String[] args) {
 		MNISTManager im = new MNISTManager(false);
@@ -24,6 +24,8 @@ public class ImageViewer {
 		double[][] images = imageData.getImages();
 		
 		for(int j=0; j<images.length; j++) {
+			printImgValues(images[j]);
+			
 			int[] rgbs = new int[images[j].length];
 			for(int i=0; i<rgbs.length; i++) {
 				if(DRAW_BORDER) {
@@ -43,5 +45,23 @@ public class ImageViewer {
 			out.setRGB(0, 0, out.getWidth(), out.getHeight(), rgbs, 0, out.getWidth());
 			GUI.saveImage(out, FOLDER + j + ".png");
 		}
+	}
+	
+	public static void printImgValues(double[] img) {
+		String out = "";
+		int val;
+		for (int i = 0; i < img.length; i++) {
+			val = (int)(img[i] * 100);
+			if (val == 0) out += "  ";
+			else {
+				if (val < 10) out += "0";
+				//if (val < 100) out += "0";
+				out += Integer.toString(val - 1);
+			}
+			out += " ";
+			if ((i + 1) % 28 == 0) out += "\n";
+		}
+		out += "\n";
+		System.out.println(out);
 	}
 }

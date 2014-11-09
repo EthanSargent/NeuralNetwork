@@ -5,7 +5,7 @@ import java.io.FileInputStream;
 import java.io.IOException;
 
 public class MNISTManager extends ImageManager {
-	private static final String DATA_FOLDER = "C:\\Users\\scamper\\My Documents\\Neural network\\data\\";
+	private static final String DATA_FOLDER = "/Users/pratap/Documents/src/NeuralNetwork/data/";
 	private static final String IMAGE_FILE_LARGE = "train-images-idx3-ubyte";
 	private static final String IMAGE_FILE_SMALL = "t10k-images-idx3-ubyte";
 	private static final String LABEL_FILE_LARGE = "train-labels-idx1-ubyte";
@@ -55,7 +55,7 @@ public class MNISTManager extends ImageManager {
 			int numRows = imgInputStream.readInt();
 			int numCols = imgInputStream.readInt();
 			
-			//Reduces each image pixel to it's grayscale value for processing by the neural network
+			//Reduces each image pixel to its grayscale value for processing by the neural network
 			double[][] images = new double[numImgs][numRows * numCols];
 			for( int i=0; i<images.length; i++) {
 				for(int j=0; j<images[i].length; j++) {
